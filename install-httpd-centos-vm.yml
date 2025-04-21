@@ -3,6 +3,8 @@
   hosts: all
   vars_files:
     - vars.yml
+  vars:
+    namespace: "{{ ansible_eda.event.payload.issue.body }}"
   tasks:
     - name: "Create Namespace {{ namespace }}"
       kubernetes.core.k8s:
