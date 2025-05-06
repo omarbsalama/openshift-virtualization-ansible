@@ -1,0 +1,14 @@
+- name: GitHub Webhook Rulebook
+  hosts: localhost
+  sources:
+    - ansible.eda.webhook:
+        token: 09afd204f9b8a8dcee6c75d30605eef208df60e6
+  rules:
+    - name: React to GitHub Push
+      condition: event.payload.action == "opened"
+      action:
+        run_job_template:
+          name: vm  # your AAP job template name
+          organization: Default
+          extra_vars:
+            event: "{{ event }}"
