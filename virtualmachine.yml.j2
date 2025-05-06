@@ -3,10 +3,11 @@ kind: VirtualMachine
 metadata:
   labels:
     app: {{ name }}
-    vm.kubevirt.io/template: 'centos7-server-small'
-    vm.kubevirt.io/template.namespace: 'openshift'
+    kubevirt.io/dynamic-credentials-support: 'true'
+    vm.kubevirt.io/template: fedora-server-small
+    vm.kubevirt.io/template.namespace: openshift
     vm.kubevirt.io/template.revision: '1'
-    vm.kubevirt.io/template.version: 'v0.24.2'
+    vm.kubevirt.io/template.version: v0.32.2
   name: {{ name }}
   namespace: {{ namespace }}
 spec:
@@ -50,7 +51,7 @@ spec:
                 bus: 'virtio'
               name: 'cloudinitdisk'
           interfaces:
-            - macAddress: {{macAddress}} 
+            - macAddress: {{macAddress}}
               masquerade: {}
               model: 'virtio'
               name: 'default'
