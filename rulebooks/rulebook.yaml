@@ -2,7 +2,7 @@
   hosts: localhost
   sources:
     - ansible.eda.webhook:
-        token: 2fff44af85ae61c8bd376ba70387f68c5d94938a
+        token: 0ffd6bf81536215565eeb7169b070461021091c8
   rules:
     - name: React to GitHub Push
       condition: event.payload.action == "opened"
