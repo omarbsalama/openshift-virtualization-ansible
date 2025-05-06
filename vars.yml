@@ -1,11 +1,11 @@
 ---
 name: "httpd"
-url: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2"
+url: "https://download.fedoraproject.org/pub/fedora/linux/releases/40/Cloud/x86_64/images/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2"
 boot_image_size: "30Gi"
 vm_cpus_cores: 1
 vm_cpus_sockets: 1
 vm_cpus_threads: 1
-macAddress: '02:2c:5a:00:00:00'
-vm_machine_type: 'pc-q35-rhel8.6.0'
+macAddress: '02:44:4c:00:00:21'
+vm_machine_type: 'pc-q35-rhel9.4.0'
 vm_memory_requests: '2Gi'
 cloud_init_secret: cloud-init
