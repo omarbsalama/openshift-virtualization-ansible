@@ -4,13 +4,16 @@
   vars_files:
     - vars.yml
   vars:
+    repo_owner: "{{ ansible_eda.event.payload.repository.owner.login }}"
+    repo_name: "{{ ansible_eda.event.payload.repository.name }}"
+    issue_number: "{{ ansible_eda.event.payload.issue.number }}"
+    issue_url: "https://api.github.com/repos/{{ repo_owner }}/{{ repo_name }}/issues/{{ issue_number }}"
     namespace: "{{ ansible_eda.event.payload.issue.body }}"
   tasks:
     - name: "Create Namespace {{ namespace }}"
       kubernetes.core.k8s:
         state: present
         template: namespace.yml.j2
-
     - name: Set cloud-init fact
       ansible.builtin.set_fact:
         deploy_collection_cloud_init_content: |
@@ -25,7 +28,6 @@
             - sudo systemstl start httpd
             - sudo echo "hello world" >> /var/www/html/index.html
             - sudo systemctl restart httpd
-
     - name: Create cloud-init Secret
       kubernetes.core.k8s:
         state: present
@@ -38,12 +40,10 @@
             namespace: "{{ namespace }}"
           data:
             userdata: "{{ deploy_collection_cloud_init_content | b64encode }}"
-
     - name: "Create VirtualMachine"
       kubernetes.core.k8s:
         state: present
         template: virtualmachine.yml.j2
-
     - name: Wait for VM to be ready
       kubernetes.core.k8s_info:
         api_version: kubevirt.io/v1
@@ -56,7 +56,6 @@
       until:
       - deploy_collection_vm.resources[0].status is defined
       - deploy_collection_vm.resources[0].status.ready is true
-
     - name: Wait for VM IP to be populated
       kubernetes.core.k8s_info:
         api_version: kubevirt.io/v1
@@ -67,14 +66,45 @@
       retries: 60
       delay: 10
       until: (deploy_collection_vmi.resources[0].status.interfaces[0]['ipAddress'] | default('')) | length > 0
-
-
     - name: "Create Service"
       kubernetes.core.k8s:
         state: present
         template: service.yml.j2
-
     - name: "Create Route"
       kubernetes.core.k8s:
         state: present
         template: route.yml.j2
+    - name: Post a comment on the GitHub issue
+      uri:
+        url: "https://api.github.com/repos/{{ repo_owner }}/{{ repo_name }}/issues/{{ issue_number }}/comments"
+        method: POST
+        headers:
+          Authorization: "token {{ token }}"
+          Accept: "application/vnd.github+json"
+        body: |
+          {
+            "body": ":wave: Thanks for creating this issue! your VM {{ ansible_eda.event.payload.issue.body }} is now created!!!."
+          }
+        body_format: json
+        status_code: 201
+    - name: close the issue
+      uri:
+        url: "https://api.github.com/repos/{{ repo_owner }}/{{ repo_name }}/issues/{{ issue_number }}"
+        method: PATCH
+        headers:
+          Authorization: "token {{ token }}"
+          Accept: "application/vnd.github+json"
+        body: |
+          {
+            "state": "closed"
+          }
+        body_format: json
+        status_code: 200
+      ignore_errors: yes
+      register: result
+
+
+
+
+
+
